@@ -1,0 +1,30 @@
+version: '3'
+services:
+  db:
+    image: mysql:9.0.1
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: mydatabase
+    ports:
+      - "3306:3306"
+  
+  langchain:
+    container_name: web_container
+    command:
+      - ./wait-for-it.sh
+      - db:3306
+      - --
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --reload
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/workspace
+    depends_on:
+      - db
